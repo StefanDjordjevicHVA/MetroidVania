@@ -40,6 +40,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField]
     [Range(0, 1)]
     float xVelDampWhenTurning = 0.5f;
+    [SerializeField]
+    [Range(0, 1)]
+    float xVelDampStopWhenInAir = 0.5f;
+    [SerializeField]
+    [Range(0, 1)]
+    float xVelDampTurnWhenInAir = 0.5f;
 
     [SerializeField]
     private LayerMask lmGround;
@@ -131,12 +137,18 @@ public class PlayerMovement : MonoBehaviour
 
         Debug.Log(rb.velocity.x);
 
-        if (Mathf.Abs(Xdir) < 0.01f)
+        if (Mathf.Abs(Xdir) < 0.01f && grounded)
             xVel *= Mathf.Pow(1f - xVelDampWhenStopping, Time.deltaTime * 10f);      
-        else if (Mathf.Sign(Input.GetAxisRaw("Horizontal")) != Mathf.Sign(xVel))
+        else if ((Mathf.Sign(Input.GetAxisRaw("Horizontal")) != Mathf.Sign(xVel)) && grounded)
             xVel *= Mathf.Pow(1f - xVelDampWhenTurning, Time.deltaTime * 10f);
+        else if((Mathf.Abs(Xdir) < 0.01f) && !grounded)
+            xVel *= Mathf.Pow(1f - xVelDampStopWhenInAir, Time.deltaTime * 10f);
+        else if ((Mathf.Sign(Input.GetAxisRaw("Horizontal")) != Mathf.Sign(xVel)) && !grounded)
+            xVel *= Mathf.Pow(1f - xVelDampTurnWhenInAir, Time.deltaTime * 10f);
         else
             xVel *= Mathf.Pow(1f - xVelDampBasic, Time.deltaTime * 10f);
+
+
 
         if ((xVel < 0.001f) && (xVel > -0.001f))
             xVel = 0;
