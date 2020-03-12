@@ -18,18 +18,28 @@ public class PlayerAttack : MonoBehaviour
 
     [SerializeField]
     [Range(0, 1)]
+    float startBtwCombo = 0f;
+
+    [SerializeField]
+    [Range(0, 1)]
     float attackRange = 0f;
 
     [SerializeField]
     [Range(0, 4)]
-    int damage = 0;
+    int baseDamage = 0;
 
     int comboCount = 0;
 
     public Transform attackPos;
     private int enemies;
 
-    //TODO: Add 3rd hit combo attack
+    /** TODO:
+     *  add timer that checks if hit is in time for combo follow up
+     *  add 2 more animations for 2nd hit and combo finisher
+     *  combo finisher does 2x baseDamage
+     *  reset comboCounter if combofinished or out of time
+     *  change trigger in animation to int trigger
+     * */
 
     public Animator anim;
 
@@ -42,27 +52,59 @@ public class PlayerAttack : MonoBehaviour
 
     private void Update()
     {
-        if ((timeBtwAttack <= 0) && (timeBtwCombo <= 0))
+        if(timeBtwCombo <= 0 || comboCount > 3)
+            comboCount = 0;
+        else timeBtwCombo -= Time.deltaTime;
+
+        if (timeBtwAttack <= 0)
         {
             if (Input.GetButtonDown("Fire3"))
             {
-                anim.SetTrigger("TriggerHit");
-                //TODO add combo counter
-                Collider2D[] enemiesToDamage = Physics2D.OverlapBoxAll(attackPos.position, new Vector2(attackRange ,.5f), 0f, enemies);
-                if (enemiesToDamage.Length >= 1)
-                {
-                    Debug.Log(enemiesToDamage.Length);
-                    for (int i = 0; i < enemiesToDamage.Length; i++)
-                    {
-                        if (enemiesToDamage[i] != null) ;
-                            enemiesToDamage[i].GetComponent<EnemyBehaviour>().TakeDamage(damage);
-                    }
-                }
+                    ComboAttacks();
+            }
+        } else timeBtwAttack -= Time.deltaTime;
 
-                timeBtwAttack = startTimeBtwAttack;
+        Animations(comboCount);
+    }
+
+    private void ComboAttacks()
+    {
+
+        //TODO: rework animation triggers to int for ez transitions
+        
+        Attack();
+        
+        timeBtwAttack = startTimeBtwAttack;
+        timeBtwCombo = startBtwCombo;
+    }
+
+    private void Attack()
+    {
+        Debug.Log(comboCount);
+        //TODO: add combo counter
+        Collider2D[] enemiesToDamage = Physics2D.OverlapBoxAll(attackPos.position, new Vector2(attackRange, .5f), 0f, enemies);
+        if (enemiesToDamage.Length >= 1)
+        {
+            for (int i = 0; i < enemiesToDamage.Length; i++)
+            {
+                if (enemiesToDamage[i] != null && comboCount <= 1)
+                {
+                    enemiesToDamage[i].GetComponent<EnemyBehaviour>().TakeDamage(baseDamage);
+                    Debug.Log("tik");
+                }
+                else if (enemiesToDamage[i] != null && comboCount >= 2)
+                {
+                    enemiesToDamage[i].GetComponent<EnemyBehaviour>().TakeDamage(baseDamage * 2);
+                    Debug.Log("boom");
+                }
             }
         }
-        else timeBtwAttack -= Time.deltaTime;
+        comboCount++;
+    }
+
+    private void Animations(int c)
+    {
+        anim.SetInteger("ComboCounter", c);
     }
 
     //gizmo to see attackrange and position

@@ -48,6 +48,9 @@ public class EnemyBehaviour : MonoBehaviour
 
     bool hit = false;
 
+    int prevHealt;
+    int currentHealth;
+
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -61,7 +64,7 @@ public class EnemyBehaviour : MonoBehaviour
         CalculateDistanceAndDirection(transform, player.transform);
 
         timeBtwMovement -= Time.deltaTime;
-        timeWhenHit -= Time.deltaTime;
+        //timeWhenHit -= Time.deltaTime;
     }
 
     private void FixedUpdate()
@@ -87,7 +90,10 @@ public class EnemyBehaviour : MonoBehaviour
             timeBtwMovement = timeStartBtwMovement;
         } else if (hit)
         {
-            rb.velocity = new Vector2(hitVel * -direction.x, rb.velocity.y);
+            if((Mathf.Abs(prevHealt - currentHealth) == 1))
+                rb.velocity = new Vector2(hitVel * -direction.x, rb.velocity.y);
+            else if ((Mathf.Abs(prevHealt - currentHealth) == 2))
+                rb.velocity = new Vector2((hitVel * 4) * -direction.x, rb.velocity.y);
             hit = false;
         }
             
@@ -95,19 +101,19 @@ public class EnemyBehaviour : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
-        Debug.Log("hit!");
-        if (timeWhenHit <= 0)
+        prevHealt = health;
+
+        health -= damage;
+
+        currentHealth = health;
+
+        if (health <= 0)
         {
-            health -= damage;
-
-            if (health <= 0)
-            {
-                Destroy(this.gameObject);
-            }
-
-            hit = true;
-            timeWhenHit = timeStartWhenHit;
+            Destroy(this.gameObject);
         }
+
+        hit = true;
+        //timeWhenHit = timeStartWhenHit;
     }
 
     
