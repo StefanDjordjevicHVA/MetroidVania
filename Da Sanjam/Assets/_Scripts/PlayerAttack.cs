@@ -6,26 +6,39 @@ public class PlayerAttack : MonoBehaviour
 {
     [SerializeField]
     [Range(0, 1)]
-    float timeBtwAttack;
+    float timeBtwAttack = 0f;
 
     [SerializeField]
     [Range(0, 1)]
-    float startTimeBtwAttack;
+    float startTimeBtwAttack = 0f;
 
     [SerializeField]
     [Range(0, 1)]
-    float timeBtwCombo;
+    float timeBtwCombo = 0f;
 
     [SerializeField]
     [Range(0, 1)]
-    float attackRange;
+    float attackRange = 0f;
+
+    [SerializeField]
+    [Range(0, 4)]
+    int damage = 0;
 
     int comboCount = 0;
 
     public Transform attackPos;
-    public LayerMask enemies;
+    private int enemies;
 
     //TODO: Add 3rd hit combo attack
+
+    public Animator anim;
+
+    private void Start()
+    {
+        enemies = LayerMask.GetMask("Enemy");
+
+        anim = GetComponentInChildren<Animator>();
+    }
 
     private void Update()
     {
@@ -33,13 +46,17 @@ public class PlayerAttack : MonoBehaviour
         {
             if (Input.GetButtonDown("Fire3"))
             {
+                anim.SetTrigger("TriggerHit");
                 //TODO add combo counter
-                Debug.Log("SLASH!");
-
-                Collider2D[] enemiesToDamage = Physics2D.OverlapCircleAll(attackPos.position, attackRange, enemies);
-                for (int i = 0; i < enemiesToDamage.Length; i++)
+                Collider2D[] enemiesToDamage = Physics2D.OverlapBoxAll(attackPos.position, new Vector2(attackRange ,.5f), 0f, enemies);
+                if (enemiesToDamage.Length >= 1)
                 {
-                    //do something
+                    Debug.Log(enemiesToDamage.Length);
+                    for (int i = 0; i < enemiesToDamage.Length; i++)
+                    {
+                        if (enemiesToDamage[i] != null) ;
+                            enemiesToDamage[i].GetComponent<EnemyBehaviour>().TakeDamage(damage);
+                    }
                 }
 
                 timeBtwAttack = startTimeBtwAttack;
@@ -52,6 +69,7 @@ public class PlayerAttack : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(attackPos.position, attackRange);
+        //Gizmos.DrawWireBox(attackPos.position, attackRange);
+        Gizmos.DrawWireCube(attackPos.position, new Vector3(attackRange, .5f, 1f));
     }
 }

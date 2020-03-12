@@ -47,7 +47,7 @@ public class PlayerMovement : MonoBehaviour
     float xVelDampTurnWhenInAir = 0.5f;
 
     [SerializeField]
-    private LayerMask lmGround;
+    private LayerMask lmGround = 1;
     
     Rigidbody2D rb;
 
